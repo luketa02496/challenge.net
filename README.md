@@ -25,5 +25,5 @@ Tem como objetivo permitir o **cadastro, listagem, atualização e exclusão** d
 
 ### Clonando o projeto
 ```bash
-git clone https://github.com/seu-usuario/ApiMottu.git
+git clone [https://github.com/seu-usuario/ApiMottu.git](https://github.com/calazans-99/Challenge.Net.git)
 cd ApiMottu
