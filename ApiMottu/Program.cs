@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
 var provider = builder.Configuration["DatabaseProvider"];
 
 if (provider == "Oracle")
@@ -11,7 +10,7 @@ if (provider == "Oracle")
     builder.Services.AddDbContext<AppDbContext>(options =>
         options.UseOracle(builder.Configuration.GetConnectionString("OracleConnection")));
 }
-else 
+else
 {
     builder.Services.AddDbContext<AppDbContext>(options =>
         options.UseInMemoryDatabase("MottuDb"));
@@ -23,13 +22,19 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
+using (var scope = app.Services.CreateScope())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    DbInitializer.Seed(db);
 }
 
-app.UseHttpsRedirection();
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Moto API V1");
+    c.RoutePrefix = "swagger";
+});
+
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
