@@ -1,3 +1,6 @@
+integrantes:: lucas abud berbel 
+marcus calazans
+
 # 🛵 ApiMottu – Mapeamento de Motos nos Pátios
 
 API RESTful desenvolvida em ASP.NET Core para o **Challenge FIAP 2025**, em parceria com a **Mottu**.  
@@ -29,8 +32,8 @@ Seu objetivo é permitir o **cadastro, consulta, atualização e exclusão** de 
 ### 🚀 Clonando o projeto
 
 ```bash
-git clone https://github.com/calazans-99/Challenge.Net.git
-cd Challenge.Net
+git clone https://github.com/luketa02496/challenge.net.git
+cd challenge.net
 ```
 
 ---
@@ -95,8 +98,8 @@ O comportamento do banco de dados é controlado via `appsettings.json`:
 
 ## 🗂️ Repositório do Projeto
 
-🔗 [https://github.com/calazans-99/Challenge.Net](https://github.com/calazans-99/Challenge.Net)
+🔗 [https://github.com/luketa02496/challenge.net](https://github.com/luketa02496/challenge.net)
 
 ---
 
-## 📅 Challenge 2025 – FIAP | 2TDS | 1º Semestre
+## 📅 Challenge 2025 – FIAP | 2TDS | 2º Semestre
