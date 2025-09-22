@@ -1,5 +1,6 @@
 using ApiMottu.Data;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection; // necessário para pegar assembly
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,7 +19,17 @@ else
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+
+//  Configuração do Swagger com comentários XML
+builder.Services.AddSwaggerGen(c =>
+{
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    if (File.Exists(xmlPath))
+    {
+        c.IncludeXmlComments(xmlPath);
+    }
+});
 
 var app = builder.Build();
 
@@ -32,7 +43,7 @@ app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Moto API V1");
-    c.RoutePrefix = "swagger";
+    c.RoutePrefix = "swagger"; // acessa em /swagger
 });
 
 app.UseAuthorization();

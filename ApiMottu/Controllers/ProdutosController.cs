@@ -17,6 +17,7 @@ namespace ApiMottu.Controllers
         }
 
         // GET: api/produtos?page=1&pageSize=10
+        // busca todos os produtos
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Produto>>> GetProdutos(int page = 1, int pageSize = 10)
         {
@@ -27,6 +28,7 @@ namespace ApiMottu.Controllers
         }
 
         // GET: api/produtos/5
+        //busca um produto especifico
         [HttpGet("{id}")]
         public async Task<ActionResult<Produto>> GetProduto(int id)
         {
@@ -39,6 +41,7 @@ namespace ApiMottu.Controllers
         }
 
         // POST: api/produtos
+        // cadastra um novo produto
         [HttpPost]
         public async Task<ActionResult<Produto>> PostProduto(Produto produto)
         {
@@ -49,6 +52,7 @@ namespace ApiMottu.Controllers
         }
 
         // PUT: api/produtos/5
+        // atualizada um novo produto
         [HttpPut("{id}")]
         public async Task<IActionResult> PutProduto(int id, Produto produto)
         {
@@ -73,6 +77,7 @@ namespace ApiMottu.Controllers
         }
 
         // DELETE: api/produtos/5
+        // deleta um produto
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProduto(int id)
         {

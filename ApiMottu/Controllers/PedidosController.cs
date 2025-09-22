@@ -2,7 +2,6 @@
 using ApiMottu.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Runtime.Intrinsics.X86;
 
 namespace ApiMottu.Controllers
 {
@@ -17,11 +16,10 @@ namespace ApiMottu.Controllers
             _context = context;
         }
 
-       
-
-// GET: api/pedidos?page=1&pageSize=10
-[HttpGet]
-        public async Task<ActionResult<IEnumerable<object>>> GetPedidos(int page = 1, int pageSize = 10)
+        // GET: api/pedidos?page=1&pageSize=10
+        // busca todas os pedidos
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Resource<object>>>> GetPedidos(int page = 1, int pageSize = 10)
         {
             var pedidos = await _context.Pedidos
                 .Include(p => p.Usuario)
@@ -31,20 +29,29 @@ namespace ApiMottu.Controllers
                 .Take(pageSize)
                 .ToListAsync();
 
-            // Projeta o resultado para incluir apenas informações relevantes
-            var resultado = pedidos.Select(p => new
+            var resultado = pedidos.Select(p =>
             {
-                p.Id,
-                Usuario = new { p.Usuario.Id, p.Usuario.Nome, p.Usuario.Email },
-                p.Data,
-                p.ValorTotal,
-                Produtos = p.PedidoProdutos.Select(pp => new
+                var pedidoObj = new
                 {
-                    pp.Produto.Id,
-                    pp.Produto.Nome,
-                    pp.Produto.Preco,
-                    pp.Quantidade
-                })
+                    p.Id,
+                    Usuario = new { p.Usuario.Id, p.Usuario.Nome, p.Usuario.Email },
+                    p.Data,
+                    p.ValorTotal,
+                    Produtos = p.PedidoProdutos.Select(pp => new
+                    {
+                        pp.Produto.Id,
+                        pp.Produto.Nome,
+                        pp.Produto.Preco,
+                        pp.Quantidade
+                    })
+                };
+
+                var res = new Resource<object>(pedidoObj);
+                res.Links.Add(new Link("self", Url.Action(nameof(GetPedido), new { id = p.Id }), "GET"));
+                res.Links.Add(new Link("update", Url.Action(nameof(PutPedido), new { id = p.Id }), "PUT"));
+                res.Links.Add(new Link("delete", Url.Action(nameof(DeletePedido), new { id = p.Id }), "DELETE"));
+
+                return res;
             });
 
             return Ok(resultado);
@@ -52,7 +59,8 @@ namespace ApiMottu.Controllers
 
         // GET: api/pedidos/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Pedido>> GetPedido(int id)
+        //busca uma pedido especifico
+        public async Task<ActionResult<Resource<object>>> GetPedido(int id)
         {
             var pedido = await _context.Pedidos
                 .Include(p => p.Usuario)
@@ -63,10 +71,32 @@ namespace ApiMottu.Controllers
             if (pedido == null)
                 return NotFound();
 
-            return pedido;
+            var pedidoObj = new
+            {
+                pedido.Id,
+                Usuario = new { pedido.Usuario.Id, pedido.Usuario.Nome, pedido.Usuario.Email },
+                pedido.Data,
+                pedido.ValorTotal,
+                Produtos = pedido.PedidoProdutos.Select(pp => new
+                {
+                    pp.Produto.Id,
+                    pp.Produto.Nome,
+                    pp.Produto.Preco,
+                    pp.Quantidade
+                })
+            };
+
+            var resource = new Resource<object>(pedidoObj);
+            resource.Links.Add(new Link("self", Url.Action(nameof(GetPedido), new { id = pedido.Id }), "GET"));
+            resource.Links.Add(new Link("update", Url.Action(nameof(PutPedido), new { id = pedido.Id }), "PUT"));
+            resource.Links.Add(new Link("delete", Url.Action(nameof(DeletePedido), new { id = pedido.Id }), "DELETE"));
+            resource.Links.Add(new Link("all", Url.Action(nameof(GetPedidos)), "GET"));
+
+            return Ok(resource);
         }
 
         // POST: api/pedidos
+        // cadastra um novo pedido
         [HttpPost]
         public async Task<ActionResult<Pedido>> PostPedido([FromBody] Pedido pedido)
         {
@@ -74,7 +104,6 @@ namespace ApiMottu.Controllers
             if (usuario == null)
                 return BadRequest("Usuário não encontrado.");
 
-            // Cria a lista de PedidoProdutos
             var pedidoProdutos = new List<PedidoProduto>();
             foreach (var pp in pedido.PedidoProdutos)
             {
@@ -101,6 +130,7 @@ namespace ApiMottu.Controllers
         }
 
         // PUT: api/pedidos/5
+        // atualiza um pedido existente
         [HttpPut("{id}")]
         public async Task<IActionResult> PutPedido(int id, [FromBody] Pedido pedido)
         {
@@ -117,7 +147,6 @@ namespace ApiMottu.Controllers
             pedidoExistente.Data = pedido.Data;
             pedidoExistente.UsuarioId = pedido.UsuarioId;
 
-            // Atualiza PedidoProdutos
             _context.PedidoProdutos.RemoveRange(pedidoExistente.PedidoProdutos);
 
             var novoPedidoProdutos = new List<PedidoProduto>();
@@ -146,6 +175,7 @@ namespace ApiMottu.Controllers
         }
 
         // DELETE: api/pedidos/5
+        //deleta um pedido
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePedido(int id)
         {

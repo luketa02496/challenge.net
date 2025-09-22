@@ -17,6 +17,7 @@ namespace ApiMottu.Controllers
         }
 
         // GET: api/usuarios?page=1&pageSize=10
+        // busca todos os usuarios
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Usuario>>> GetUsuarios(int page = 1, int pageSize = 10)
         {
@@ -27,6 +28,7 @@ namespace ApiMottu.Controllers
         }
 
         // GET: api/usuarios/5
+        // busca um usuario especifico
         [HttpGet("{id}")]
         public async Task<ActionResult<Usuario>> GetUsuario(int id)
         {
@@ -39,6 +41,7 @@ namespace ApiMottu.Controllers
         }
 
         // POST: api/usuarios
+        // cadastra um novo usuario
         [HttpPost]
         public async Task<ActionResult<Usuario>> PostUsuario(Usuario usuario)
         {
@@ -49,6 +52,7 @@ namespace ApiMottu.Controllers
         }
 
         // PUT: api/usuarios/5
+        // atualiza um usuario
         [HttpPut("{id}")]
         public async Task<IActionResult> PutUsuario(int id, Usuario usuario)
         {
@@ -73,6 +77,7 @@ namespace ApiMottu.Controllers
         }
 
         // DELETE: api/usuarios/5
+        // deleta um usuario
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUsuario(int id)
         {

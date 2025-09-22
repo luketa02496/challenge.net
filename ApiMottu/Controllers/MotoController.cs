@@ -17,10 +17,12 @@ namespace ApiMottu.Controllers
         }
 
         // GET: api/Moto
+        // busca todas as motos
         [HttpGet]
         public IActionResult GetAll() => Ok(_context.Motos.ToList());
 
         // GET: api/Moto/{id}
+        // busca uma moto especifica
         [HttpGet("{id}")]
         public IActionResult Get(int id)
         {
@@ -45,6 +47,7 @@ namespace ApiMottu.Controllers
         }
 
         // POST: api/Moto
+        // cadastra uma nova moto
         [HttpPost]
         public IActionResult Create(Moto moto)
         {
@@ -54,6 +57,7 @@ namespace ApiMottu.Controllers
         }
 
         // PUT: api/Moto/{id}
+        // altera alguma moto existente
         [HttpPut("{id}")]
         public IActionResult Update(int id, Moto updated)
         {
@@ -70,6 +74,7 @@ namespace ApiMottu.Controllers
         }
 
         // DELETE: api/Moto/{id}
+        // deleta alguma moto
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {

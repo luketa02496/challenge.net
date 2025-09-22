@@ -7,10 +7,10 @@ namespace ApiMottu.Data
     {
         public static void Seed(AppDbContext context)
         {
-            // Garante que o banco exista (mesmo no InMemory)
+            
             context.Database.EnsureCreated();
 
-            // Se já tiver qualquer dado, não repete
+           
             if (context.Usuarios.Any() || context.Produtos.Any() || context.Motos.Any())
                 return;
 
@@ -54,7 +54,7 @@ namespace ApiMottu.Data
             };
             context.Pedidos.Add(pedido);
 
-            // --- Salvar tudo ---
+            
             context.SaveChanges();
         }
     }
