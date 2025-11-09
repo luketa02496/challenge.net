@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using ApiMottu.Models;
+using ApiMottu.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -9,29 +11,44 @@ namespace ApiMottu.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
     public class AuthController : ControllerBase
     {
         private readonly IConfiguration _config;
-        public AuthController(IConfiguration config) => _config = config;
+        private readonly UsuarioService _usuarioService;
+
+        public AuthController(IConfiguration config, UsuarioService usuarioService)
+        {
+            _config = config;
+            _usuarioService = usuarioService;
+        }
 
         [HttpPost("token")]
+        [AllowAnonymous]
         public IActionResult Token([FromBody] LoginModel login)
         {
-            
             if (string.IsNullOrWhiteSpace(login.Username) || string.IsNullOrWhiteSpace(login.Password))
-                return BadRequest();
+                return BadRequest("Usuário e senha são obrigatórios.");
 
-            // autenticação demo
-            if (login.Password != "123456") return Unauthorized();
+            // Buscar o usuário pelo e-mail
+            var usuario = _usuarioService.ObterUsuarioPorEmail(login.Username);
+            if (usuario == null)
+                return Unauthorized("Usuário não encontrado.");
 
+            // Aqui deveria ter a verificação de senha real (criptografada no banco)
+            if (login.Password != "123456")
+                return Unauthorized("Senha incorreta.");
+
+            // Criar token JWT
             var jwtSection = _config.GetSection("Jwt");
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSection["Key"]));
+            var keyString = jwtSection["Key"] ?? throw new Exception("JWT Key não configurada!");
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyString));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            var claims = new[] {
-                new Claim(JwtRegisteredClaimNames.Sub, login.Username),
-                new Claim("role", "User")
+            var claims = new[]
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, usuario.Email),
+                new Claim("nome", usuario.Nome),
+                new Claim("tipo", usuario.TipoUsuario)
             };
 
             var token = new JwtSecurityToken(
@@ -42,9 +59,16 @@ namespace ApiMottu.Controllers
                 signingCredentials: creds
             );
 
-            return Ok(new { token = new JwtSecurityTokenHandler().WriteToken(token) });
+            return Ok(new
+            {
+                token = new JwtSecurityTokenHandler().WriteToken(token),
+                usuario = new
+                {
+                    usuario.Nome,
+                    usuario.TipoUsuario,
+                    usuario.Email
+                }
+            });
         }
-
-        public class LoginModel { public string Username { get; set; } public string Password { get; set; } }
     }
 }

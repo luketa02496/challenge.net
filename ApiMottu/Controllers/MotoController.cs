@@ -2,6 +2,9 @@ using Microsoft.AspNetCore.Mvc;
 using ApiMottu.Models;
 using ApiMottu.Data;
 using System.Linq;
+using Oracle.ManagedDataAccess.Client;
+using System.Data;
+using ApiMottu.Services; 
 
 namespace ApiMottu.Controllers
 {
@@ -10,19 +13,19 @@ namespace ApiMottu.Controllers
     public class MotoController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly OracleService _oracleService;
 
-        public MotoController(AppDbContext context)
+        public MotoController(AppDbContext context, OracleService oracleService)
         {
             _context = context;
+            _oracleService = oracleService;
         }
 
         // GET: api/Moto
-        // busca todas as motos
         [HttpGet]
         public IActionResult GetAll() => Ok(_context.Motos.ToList());
 
         // GET: api/Moto/{id}
-        // busca uma moto especifica
         [HttpGet("{id}")]
         public IActionResult Get(int id)
         {
@@ -31,7 +34,7 @@ namespace ApiMottu.Controllers
             return Ok(moto);
         }
 
-        // GET: api/Moto/buscar?status=...&modelo=...
+        
         [HttpGet("buscar")]
         public IActionResult BuscarPorStatusOuModelo([FromQuery] string? status, [FromQuery] string? modelo)
         {
@@ -47,7 +50,6 @@ namespace ApiMottu.Controllers
         }
 
         // POST: api/Moto
-        // cadastra uma nova moto
         [HttpPost]
         public IActionResult Create(Moto moto)
         {
@@ -57,7 +59,6 @@ namespace ApiMottu.Controllers
         }
 
         // PUT: api/Moto/{id}
-        // altera alguma moto existente
         [HttpPut("{id}")]
         public IActionResult Update(int id, Moto updated)
         {
@@ -74,7 +75,6 @@ namespace ApiMottu.Controllers
         }
 
         // DELETE: api/Moto/{id}
-        // deleta alguma moto
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
@@ -84,6 +84,39 @@ namespace ApiMottu.Controllers
             _context.Motos.Remove(moto);
             _context.SaveChanges();
             return NoContent();
+        }
+
+        // NOVO ENDPOINT: chama procedure Oracle
+        // GET: api/Moto/oracle/listar
+        [HttpGet("oracle/listar")]
+        public async Task<IActionResult> ListarMotosOracle()
+        {
+            try
+            {
+                var param = new OracleParameter("p_rc", OracleDbType.RefCursor, ParameterDirection.Output);
+                var result = await _oracleService.ExecuteProcedureAsync("pkg_moto.prc_listar_motos_json_cursor", param);
+
+                var motos = new List<object>();
+
+                foreach (DataRow row in result.Rows)
+                {
+                    motos.Add(new
+                    {
+                        IdMoto = row["ID_MOTO"],
+                        Placa = row["PLACA"],
+                        Modelo = row["MODELO"],
+                        Patio = row["PATIO"],
+                        Status = row["STATUS"],
+                        JsonMoto = row["JSON_MOTO"]
+                    });
+                }
+
+                return Ok(motos);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Erro ao buscar motos no Oracle: {ex.Message}");
+            }
         }
     }
 }

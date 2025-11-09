@@ -7,11 +7,12 @@ namespace ApiMottu.Data
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
+        // --- DbSets ---
         public DbSet<Moto> Motos { get; set; }
         public DbSet<Produto> Produtos { get; set; }
         public DbSet<Usuario> Usuarios { get; set; }
         public DbSet<Pedido> Pedidos { get; set; }
-        public DbSet<PedidoProduto> PedidoProdutos { get; set; } // Tabela de junção
+        public DbSet<PedidoProduto> PedidoProdutos { get; set; } // tabela de junção
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -54,6 +55,10 @@ namespace ApiMottu.Data
 
                 entity.HasKey(e => e.Id);
 
+                entity.Property(e => e.Id)
+                      .HasColumnName("ID")
+                      .ValueGeneratedOnAdd();
+
                 entity.Property(e => e.Nome)
                       .HasColumnName("NOME")
                       .HasMaxLength(100)
@@ -65,7 +70,8 @@ namespace ApiMottu.Data
 
                 entity.Property(e => e.Preco)
                       .HasColumnName("PRECO")
-                      .HasColumnType("decimal(18,2)");
+                      .HasColumnType("decimal(18,2)")
+                      .IsRequired();
 
                 entity.Property(e => e.Estoque)
                       .HasColumnName("ESTOQUE");
@@ -77,6 +83,10 @@ namespace ApiMottu.Data
                 entity.ToTable("USUARIOS");
 
                 entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.Id)
+                      .HasColumnName("ID")
+                      .ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Nome)
                       .HasColumnName("NOME")
@@ -92,6 +102,15 @@ namespace ApiMottu.Data
                       .HasColumnName("SENHA")
                       .HasMaxLength(100)
                       .IsRequired();
+
+                entity.Property(e => e.TipoUsuario)
+                      .HasColumnName("TIPO_USUARIO")
+                      .HasMaxLength(50)
+                      .HasDefaultValue("Cliente");
+
+                entity.Property(e => e.DataCadastro)
+                      .HasColumnName("DATA_CADASTRO")
+                      .HasColumnType("datetime");
             });
 
             // ---- PEDIDOS ----
@@ -100,6 +119,10 @@ namespace ApiMottu.Data
                 entity.ToTable("PEDIDOS");
 
                 entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.Id)
+                      .HasColumnName("ID")
+                      .ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Data)
                       .HasColumnName("DATA")
@@ -111,10 +134,11 @@ namespace ApiMottu.Data
 
                 entity.HasOne(p => p.Usuario)
                       .WithMany(u => u.Pedidos)
-                      .HasForeignKey(p => p.UsuarioId);
+                      .HasForeignKey(p => p.UsuarioId)
+                      .OnDelete(DeleteBehavior.Cascade);
             });
 
-            // ---- PEDIDO_PRODUTOS (TABELA DE JUNÇÃO) ----
+            // ---- PEDIDO_PRODUTOS (N:N) ----
             modelBuilder.Entity<PedidoProduto>(entity =>
             {
                 entity.ToTable("PEDIDO_PRODUTOS");
@@ -128,7 +152,14 @@ namespace ApiMottu.Data
                 entity.HasOne(pp => pp.Produto)
                       .WithMany(pr => pr.PedidoProdutos)
                       .HasForeignKey(pp => pp.ProdutoId);
+
+                entity.Property(pp => pp.Quantidade)
+                      .HasColumnName("QUANTIDADE")
+                      .IsRequired();
             });
+
+            
+            base.OnModelCreating(modelBuilder);
         }
     }
 }

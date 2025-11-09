@@ -1,11 +1,12 @@
 using ApiMottu.Data;
-using Microsoft.EntityFrameworkCore;
-using System.Reflection;
+using ApiMottu.Repositories;
+using ApiMottu.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using Microsoft.AspNetCore.Mvc.Versioning;
-using ApiMottu.Services; // vamos criar
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Reflection;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,7 +23,16 @@ else
         options.UseInMemoryDatabase("MottuDb"));
 }
 
-// --- Controllers / Swagger / XML ---
+// --- Services ---
+builder.Services.AddScoped<UsuarioService>();
+builder.Services.AddSingleton<IModelPredictionService, ModelPredictionService>();
+
+//  Serviços Oracle (para acessar as procedures)
+builder.Services.AddScoped<OracleService>();
+builder.Services.AddScoped<MotoRepository>();
+builder.Services.AddScoped<AuditoriaRepository>();
+
+// --- Controllers / Swagger ---
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -49,15 +59,16 @@ builder.Services.AddApiVersioning(options =>
 
 // --- Health Checks ---
 builder.Services.AddHealthChecks()
-    .AddDbContextCheck<AppDbContext>("Database"); // checa o DbContext
+    .AddDbContextCheck<AppDbContext>("Database");
 
-// --- Authentication (JWT) ---
+// --- JWT Authentication ---
 var jwtSection = builder.Configuration.GetSection("Jwt");
 var issuer = jwtSection["Issuer"];
 var audience = jwtSection["Audience"];
-var key = jwtSection["Key"];
+var key = jwtSection["Key"] ?? throw new Exception("JWT Key não configurada!");
 
 var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -67,7 +78,7 @@ builder.Services.AddAuthentication(options =>
 {
     options.RequireHttpsMetadata = false;
     options.SaveToken = true;
-    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+    options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
         ValidateAudience = true,
@@ -78,12 +89,9 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// --- Autorização padrão (aplica [Authorize]) ---
 builder.Services.AddAuthorization();
 
-// --- ML.NET service ---
-builder.Services.AddSingleton<IModelPredictionService, ModelPredictionService>();
-
+// --- Build app ---
 var app = builder.Build();
 
 // --- Seed DB ---
@@ -93,7 +101,7 @@ using (var scope = app.Services.CreateScope())
     DbInitializer.Seed(db);
 }
 
-// --- Middleware pipeline ---
+// --- Middleware ---
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
@@ -102,15 +110,10 @@ app.UseSwaggerUI(c =>
 });
 
 app.UseRouting();
-
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
-// Health endpoint
 app.MapHealthChecks("/health");
-
-
 
 app.Run();

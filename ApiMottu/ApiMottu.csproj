@@ -13,9 +13,10 @@
 		<PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="8.0.10" />
 		<PackageReference Include="Microsoft.ML" Version="4.0.3" />
 		<PackageReference Include="Microsoft.ML.FastTree" Version="4.0.3" />
-		<PackageReference Include="Oracle.EntityFrameworkCore" Version="8.0.10" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.10" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.10" />
+		<PackageReference Include="Oracle.EntityFrameworkCore" Version="8.21.121" />
+		<PackageReference Include="Oracle.ManagedDataAccess.Core" Version="3.21.120" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.1" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.10" />
 		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
