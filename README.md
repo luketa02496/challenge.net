@@ -29,7 +29,7 @@ Seu objetivo é permitir o **cadastro, consulta, atualização e exclusão** de 
 ### 🚀 Clonando o projeto
 
 ```bash
-git clone https://github.com/calazans-99/Challenge.Net.git
+git clone https://github.com/luketa02496/Challenge.Net.git
 cd Challenge.Net
 ```
 
@@ -95,7 +95,7 @@ O comportamento do banco de dados é controlado via `appsettings.json`:
 
 ## 🗂️ Repositório do Projeto
 
-🔗 [https://github.com/calazans-99/Challenge.Net](https://github.com/calazans-99/Challenge.Net)
+🔗 [https://github.com/luketa02496/Challenge.Net](https://github.com/luketa02496/Challenge.Net)
 
 ---
 
